@@ -1,0 +1,36 @@
+---
+- name: Using the copy module
+  hosts: tag_Name_EC2_dp
+  become: yes
+  tasks:
+    - name: Create rundeck group
+      group:
+        name: rundeck
+        state: present
+
+    - name: Create rundeck user
+      user:
+        name: rundeck
+        group: rundeck
+    - name: make direcotry
+      file:
+        path: "/home/rundeck/.ssh"
+        state: directory
+    - name: create empty file
+      file:
+        path: "/home/rundeck/.ssh/authorized_keys"
+        state: touch
+    - name: copy public Key
+      copy:
+        src: /var/lib/rundeck/.ssh/id_rsa.pub
+        dest: /home/rundeck/.ssh/authorized_keys
+        owner: rundeck
+        group: rundeck
+        mode: 0644
+    - name: Enable Password Authentication
+      lineinfile:
+         dest=/etc/ssh/sshd_config
+         regexp='^PasswordAuthentication'
+         line="PasswordAuthentication yes"
+         state=present
+
