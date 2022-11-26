@@ -7,7 +7,7 @@
       group:
         name: rundeck
         state: present
-
+ 
     - name: Create rundeck user
       user:
         name: rundeck
@@ -21,7 +21,7 @@
         path: "/home/rundeck/.ssh/authorized_keys"
         state: touch
     - name: copy public Key
-      copy:
+      copy:  
         src: /var/lib/rundeck/.ssh/id_rsa.pub
         dest: /home/rundeck/.ssh/authorized_keys
         owner: rundeck
@@ -33,4 +33,16 @@
          regexp='^PasswordAuthentication'
          line="PasswordAuthentication yes"
          state=present
-
+         backup=yes
+    - name: sshd restart
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+        enabled: true
+    - name: Give sudo access to rundeck user
+      blockinfile:
+        path: /etc/sudoers
+        insertafter: 'root    ALL=(ALL)       ALL'
+        block: |
+          # Gives sudo access to the rundeck group
+          %rundeck        ALL=(ALL)       NOPASSWD: ALL
